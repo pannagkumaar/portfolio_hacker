@@ -27,7 +27,7 @@ export default function Philosophy() {
     <section id="philosophy" ref={ref} className="py-20 px-4 max-w-6xl mx-auto">
       <div className={`transition-all duration-1000 ${isVisible ? "fade-in-up" : "opacity-0"}`}>
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold font-mono mb-12 neon-glow">{"> Philosophy"}</h2>
+          <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">{"> Philosophy"}</h2>
 
           <div className="terminal-border p-8 md:p-12 bg-card/50 space-y-6">
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed italic">

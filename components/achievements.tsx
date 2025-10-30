@@ -37,7 +37,7 @@ export default function Achievements() {
   return (
     <section id="achievements" ref={ref} className="py-20 px-4 max-w-6xl mx-auto">
       <div className={`transition-all duration-1000 ${isVisible ? "fade-in-up" : "opacity-0"}`}>
-        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-12 neon-glow">
+        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">
           {"> Achievements & Certifications"}
         </h2>
 

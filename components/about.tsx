@@ -26,7 +26,7 @@ export default function About() {
   return (
     <section id="about" ref={ref} className="py-20 px-4 max-w-6xl mx-auto">
       <div className={`transition-all duration-1000 ${isVisible ? "fade-in-up" : "opacity-0"}`}>
-        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow">{"> About Me"}</h2>
+        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">{"> About Me"}</h2>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           <div className="space-y-4 text-muted-foreground leading-relaxed">

@@ -35,7 +35,7 @@ export default function Skills() {
   return (
     <section id="skills" ref={ref} className="py-20 px-4 max-w-6xl mx-auto">
       <div className={`transition-all duration-1000 ${isVisible ? "fade-in-up" : "opacity-0"}`}>
-        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-4 neon-glow">{"> Installed Modules"}</h2>
+        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-4 neon-glow text-glitch">{"> Installed Modules"}</h2>
         <p className="text-muted-foreground font-mono mb-12">Capabilities Unlocked:</p>
 
         <div className="grid md:grid-cols-2 gap-6">
