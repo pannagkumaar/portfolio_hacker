@@ -24,10 +24,7 @@ export default function Home() {
     setBooting(false)
   }
 
-  // 4. Render the boot sequence conditionally
-  if (booting) {
-    return <BootSequence onComplete={handleBootComplete} />
-  }
+
 
   return (
     // Your existing main content

@@ -1,7 +1,7 @@
 // components/TerminalConfirm.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSound } from '@/hooks/useSound'
 
 interface TerminalConfirmProps {
@@ -13,29 +13,33 @@ export default function TerminalConfirm({ href, onClose }: TerminalConfirmProps)
   const [typedCommand, setTypedCommand] = useState('')
   const [showPrompt, setShowPrompt] = useState(false)
   const playTypingSound = useSound('/sounds/click.mp3', 0.2)
-  const playBeepSound = useSound('/sounds/beep.mp3', 0.3) // Assumes you've added beep.mp3
+  const playBeepSound = useSound('/sounds/beep.mp3', 0.3)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
 
   const command = `open --external --url ${href}`
 
   // Effect for typing out the command
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-    let charIndex = 0
 
-    const typingInterval = setInterval(() => {
-      if (charIndex < command.length) {
-        setTypedCommand((prev) => prev + command.charAt(charIndex))
-        playTypingSound()
-        charIndex++
+    const typeCharacter = (index: number) => {
+      if (index < command.length) {
+        setTypedCommand(command.slice(0, index + 1));
+        playTypingSound();
+        timeoutRef.current = setTimeout(() => typeCharacter(index + 1), 50);
       } else {
-        clearInterval(typingInterval)
-        setShowPrompt(true)
-        playBeepSound()
+        setShowPrompt(true);
+        playBeepSound();
       }
-    }, 50) // Typing speed
+    };
+
+    typeCharacter(0);
 
     return () => {
-      clearInterval(typingInterval)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       document.body.style.overflow = 'auto'
     }
   }, [command, playTypingSound, playBeepSound])
