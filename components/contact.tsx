@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import ExternalLink from './ExternalLink'
 import { useEffect, useRef, useState } from "react"
 
 export default function Contact() {
@@ -37,7 +37,7 @@ export default function Contact() {
   }
 
   const contacts = [
-    { label: "Email", value: "pannag2003@gmail.com", href: "mailto:pannag2003@gmail.com" },
+    { label: "Email", value: "kumaarpannag@gmail.com", href: "mailto:kumaarpannag@gmail.com" },
     { label: "LinkedIn", value: "linkedin.com/in/pannag-kumaar", href: "https://linkedin.com/in/pannag-kumaar" },
     { label: "GitHub", value: "github.com/pannagkumaar", href: "https://github.com/pannagkumaar" },
     { label: "Medium", value: "medium.com/@pannagkumaar", href: "https://medium.com/@pannagkumaar" },
@@ -101,18 +101,16 @@ export default function Contact() {
           {/* Contact Links */}
           <div className="space-y-4">
             {contacts.map((contact) => (
-              <a
+              <ExternalLink
                 key={contact.label}
                 href={contact.href}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="terminal-border p-4 bg-card/50 hover:shadow-lg hover:shadow-primary/30 transition-all block"
               >
                 <div className="font-mono text-sm text-secondary">[{contact.label}]</div>
                 <div className="text-muted-foreground font-mono text-sm mt-1 hover:text-primary transition-colors">
                   {contact.value}
                 </div>
-              </a>
+              </ExternalLink>
             ))}
           </div>
         </div>
