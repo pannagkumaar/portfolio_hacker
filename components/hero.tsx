@@ -82,7 +82,7 @@ export default function Hero() {
           
           {showMainContent && (
               <div className="animate-fadeInUp">
-                  <h1 className="text-4xl md:text-6xl font-bold mb-4 font-mono">
+                  <h1 className="text-4xl md:text-6xl font-bold mb-4 font-mono text-glitch">
                     Hello, I'm <span className="neon-glow">Pannag Kumaar</span>
                   </h1>
 

@@ -13,7 +13,8 @@ import SideMissions from "@/components/side-missions"
 import Contact from "@/components/contact"
 import Navigation from "@/components/navigation"
 import MatrixRain from "@/components/matrix-rain"
-import BootSequence from "@/components/BootSequence" // 1. Import the new component
+import BootSequence from "@/components/BootSequence"
+import SystemStatus from "@/components/SystemStatus" // 1. Import the new component
 
 export default function Home() {
   // 2. State to manage the boot sequence
@@ -24,7 +25,7 @@ export default function Home() {
     setBooting(false)
   }
 
-
+ 
 
   return (
     // Your existing main content
@@ -33,7 +34,7 @@ export default function Home() {
       
       <div className="relative z-10 bg-black/85">
         <div className="fixed inset-0 pointer-events-none opacity-5 scanlines" />
-
+        <div className="vignette" /> {/* Add the vignette overlay here */}
         <Navigation />
         <Hero />
         <About />
@@ -44,6 +45,7 @@ export default function Home() {
         <Philosophy />
         <SideMissions />
         <Contact />
+        <SystemStatus />
       </div>
     </main>
   )

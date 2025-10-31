@@ -3,31 +3,38 @@
 
 import { useState, useEffect } from 'react'
 
-const bootLines = [
-  'BIOS Date: 10/31/25 07:50:01 Ver: 1.33.7',
-  'CPU: Quantum Core Processor @ 9.8GHz',
-  'Memory Test: 65536K OK',
-  '',
-  'Initializing Kernel...',
-  'Loading drivers...........................[OK]',
-  'Mounting root filesystem..................[OK]',
-  'Starting network interface [eth0].........[OK]',
-  'Requesting DHCP lease.....................[GRANTED]',
-  'Pinging gateway...........................[SUCCESS]',
-  '',
-  'Establishing secure connection to mainframe...',
-  'Connection established.',
-  'Authenticating user: pannag_kumaar...',
-  'Authentication successful.',
-  'Loading user profile...',
-  'Welcome.',
-]
-
 export default function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [lines, setLines] = useState<string[]>([])
   const [showCursor, setShowCursor] = useState(true)
 
   useEffect(() => {
+    // Generate dynamic date and time for the BIOS line
+    const now = new Date();
+    const date = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
+    const time = now.toLocaleTimeString('en-US', { hour12: false });
+    const biosDateLine = `BIOS Date: ${date} ${time} Ver: 1.33.7`;
+
+    const bootLines = [
+      biosDateLine,
+      'CPU: Quantum Core Processor @ 9.8GHz',
+      'Memory Test: 65536K OK',
+      '',
+      'Initializing Kernel...',
+      'Loading drivers...........................[OK]',
+      'Mounting root filesystem..................[OK]',
+      'Starting network interface [eth0].........[OK]',
+      'Requesting DHCP lease.....................[GRANTED]',
+      'Pinging gateway...........................[SUCCESS]',
+      '',
+      'Establishing secure connection to mainframe...',
+      'Connection established.',
+      'Authenticating user: pannag_kumaar...',
+      'Authentication successful.',
+      'Loading user profile...',
+      'Welcome.',
+    ]
+
+
     let currentLineIndex = 0
     const typeSound = new Audio('/sounds/click.mp3');
     typeSound.volume = 0.2;
