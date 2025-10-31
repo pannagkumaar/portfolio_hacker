@@ -12,6 +12,7 @@ type LogEntry = {
 
 export default function Contact() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isIntersecting, setIsIntersecting] = useState(false);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [step, setStep] = useState('start'); // start, name, email, message, confirm, sending, sent
@@ -28,15 +29,11 @@ export default function Contact() {
     }
   }, [log]);
 
-  // Focus input on step change
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, [step]);
-
   // Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
+        setIsIntersecting(entry.isIntersecting);
         if (entry.isIntersecting && step === 'start') {
           setIsVisible(true);
           setLog([{ type: 'system', text: 'Contact protocol loaded.' }, { type: 'system', text: 'Type "sendmsg" to initiate secure transmission.' }]);
@@ -55,6 +52,14 @@ export default function Contact() {
       }
     }
   }, [step]); // Re-run if step resets
+
+  // Focus input when the section becomes visible
+  useEffect(() => {
+    if (isIntersecting) {
+      inputRef.current?.focus();
+    }
+  }, [isIntersecting]);
+
 
   const validateEmail = (email: string) => {
     // A simple regex for email validation
@@ -214,7 +219,6 @@ export default function Contact() {
                   onChange={(e) => setInputValue(e.target.value)}
                   className="flex-grow bg-transparent text-foreground focus:outline-none"
                   disabled={step === 'sending'}
-                  autoFocus
                 />
                 <span className="terminal-cursor"></span>
               </form>
