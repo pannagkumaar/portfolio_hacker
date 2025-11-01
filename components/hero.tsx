@@ -76,7 +76,7 @@ export default function Hero() {
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-          <div className={`transition-opacity duration-500 ${showBootSequence ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`transition-opacity duration-500 ${showBootSequence ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             {showBootSequence && <BootSequence onComplete={handleBootComplete} />}
           </div>
           

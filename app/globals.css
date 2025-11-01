@@ -233,6 +233,13 @@
   pointer-events: none;
   z-index: 20; 
 }
+.terminal-cursor {
+  display: inline-block;
+  width: 10px;
+  height: 1.2em;
+  background-color: var(--primary);
+  animation: blink 1s step-end infinite;
+}
 
 body::after {
     content: "";
