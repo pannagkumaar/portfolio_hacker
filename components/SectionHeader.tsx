@@ -9,7 +9,7 @@ export default function SectionHeader({ title }: { title: string }) {
   const [text, setText] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLHeadingElement>(null);
-  const playGlitchSound = useSound('/sounds/glitch.mp3', 0.1);
+  const playGlitchSound = useSound('/sounds/glitch.wav', 0.1);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

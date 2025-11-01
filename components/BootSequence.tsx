@@ -36,7 +36,7 @@ export default function BootSequence({ onComplete }: { onComplete: () => void })
     ];
 
     let currentLineIndex = 0;
-    const typeSound = new Audio('/sounds/click.mp3');
+    const typeSound = new Audio('/sounds/click.wav');
     typeSound.volume = 0.2;
 
     const interval = setInterval(() => {

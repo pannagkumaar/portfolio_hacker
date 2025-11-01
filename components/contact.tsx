@@ -4,12 +4,11 @@ import type React from "react"
 import ExternalLink from './ExternalLink'
 import { useEffect, useRef, useState } from "react"
 
-// Define the structure for a log entry
+// ... (Keep existing LogEntry type, getRandomChars, neofetchArt) ...
 type LogEntry = {
   type: 'input' | 'system' | 'prompt' | 'error' | 'success' | 'ascii';
   text: string;
 };
-
 const getRandomChars = (length: number) => {
     const chars = '0123456789ABCDEF!@#$%^&*()_+{}|:<>?[]';
     let result = '';
@@ -18,7 +17,6 @@ const getRandomChars = (length: number) => {
     }
     return result;
 };
-
 const neofetchArt = `
            -oyhddddhyo-
          -ydmmmmmmmmmmdy-
@@ -43,15 +41,18 @@ export default function Contact() {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [log, setLog] = useState<LogEntry[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const [step, setStep] = useState('start'); // 'start', 'name', 'email', 'message', 'confirm', 'sending'
+  const [step, setStep] = useState('start'); 
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [transmissionProgress, setTransmissionProgress] = useState(0);
   const [transmissionData, setTransmissionData] = useState('');
+  // ADDITION: State for command history
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
   
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
+  // ... (Keep existing useEffect hooks: Scroll to bottom, Intersection Observer, Focus input, Transmission Animation) ...
   // Scroll to bottom of log on new entries
   useEffect(() => {
     if (logContainerRef.current) {
@@ -121,15 +122,56 @@ export default function Contact() {
     setLog(prev => [...prev, entry]);
   };
 
+  // ADDITION: Helper function for 'scan' command
+  const runFakeScan = (domain: string) => {
+    const scanLines = [
+        `Starting scan on ${domain}...`,
+        `[+] Resolving DNS... IP resolved to 104.26.10.123`,
+        `[+] Pinging host... Host is LIVE`,
+        `[+] Starting Nmap scan...`,
+        `   PORT   STATE SERVICE`,
+        `   80/tcp  OPEN  http`,
+        `   443/tcp OPEN  https`,
+        `   8443/tcp OPEN  https-alt`,
+        `[+] Checking for common vulnerabilities...`,
+        `   [INFO] Checking for XSS... (1/3)`,
+        `   [INFO] Checking for SQLi... (2/3)`,
+        `   [WARN] Weak SSL cipher suites detected. (3/3)`,
+        `[+] Scan complete. 1 warning found.`,
+    ];
+    let index = 0;
+    const interval = setInterval(() => {
+        if (index < scanLines.length) {
+            addLog({ type: 'system', text: scanLines[index] });
+            index++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 350); // 350ms delay per line
+  };
+
+  // ADDITION: Helper function for 'theme' command
+  const setTheme = (themeName: string) => {
+    document.documentElement.setAttribute('data-theme', themeName);
+    addLog({ type: 'success', text: `Theme set to ${themeName}` });
+  }
+
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
     const command = inputValue.trim();
-    const [baseCommand, arg] = command.split(' ');
+    // MODIFICATION: Add command to history and parse args
+    if (command) {
+        setCommandHistory(prev => [...prev, command]);
+    }
+    const [baseCommand, ...args] = command.split(' ');
+    const arg = args.join(' '); // Re-join all args
+
     if (step !== 'sending') addLog({ type: 'input', text: command });
     setInputValue('');
 
     switch (step) {
       case 'start':
+        // MODIFICATION: Added new commands
         switch (baseCommand.toLowerCase()) {
           case 'help':
             addLog({ type: 'system', text: 'Available commands:' });
@@ -138,12 +180,18 @@ export default function Contact() {
             addLog({ type: 'system', text: '  ls               - List available files.' });
             addLog({ type: 'system', text: '  cat <file>       - Display file content (e.g., cat projects.txt).' });
             addLog({ type: 'system', text: '  neofetch         - Display system information.' });
+            addLog({ type: 'system', text: '  echo <text>      - Print text to terminal.' });
+            addLog({ type: 'system', text: '  history          - View command history.' });
+            addLog({ type: 'system', text: '  scan <domain>    - Run a mock vulnerability scan.' });
+            addLog({ type: 'system', text: '  theme <name>     - Change terminal theme (matrix, amber, ice).' });
             addLog({ type: 'system', text: '  clear            - Clear the terminal.' });
             break;
           case 'sendmsg':
             addLog({ type: 'prompt', text: 'Enter your name:' });
             setStep('name');
             break;
+          
+          // ... (keep whoami, ls, cat, neofetch) ...
           case 'whoami':
             addLog({ type: 'success', text: 'user: guest' });
             addLog({ type: 'success', text: 'privileges: limited' });
@@ -180,6 +228,38 @@ export default function Contact() {
              addLog({ type: 'system', text: 'GPU:          Neural Matrix Renderer' });
              addLog({ type: 'system', text: 'Memory:       CLASSIFIED' });
              break;
+
+          // ADDITION: New command cases
+          case 'echo':
+            addLog({ type: 'system', text: arg || '' });
+            break;
+          case 'history':
+            if (commandHistory.length === 0) {
+              addLog({ type: 'system', text: 'No history.' });
+              break;
+            }
+            commandHistory.forEach((cmd, index) => {
+                addLog({ type: 'system', text: `  ${index + 1}: ${cmd}` });
+            });
+            break;
+          case 'scan':
+            if (arg) {
+                runFakeScan(arg);
+            } else {
+                addLog({ type: 'error', text: 'usage: scan <domain>' });
+            }
+            break;
+          case 'theme':
+            if (arg === 'matrix' || arg === 'amber' || arg === 'ice') {
+                setTheme(arg);
+            
+            } else {
+                addLog({ type: 'error', text: 'usage: theme <matrix|amber|ice>' });
+            }
+            break;
+          
+          // END ADDITION
+
           case 'clear':
             setLog([]);
             break;
@@ -190,11 +270,39 @@ export default function Contact() {
         }
         break;
 
-      case 'name': //... same as before
-      case 'email': //... same as before
-      case 'message': //... same as before
-      case 'confirm': //... same as before
-      // ... (The rest of the cases for the contact form remain unchanged)
+      // ... (Keep existing cases for 'name', 'email', 'message', 'confirm', 'sending') ...
+      case 'name':
+        if (command) {
+            setFormData(prev => ({ ...prev, name: command }));
+            addLog({ type: 'prompt', text: 'Enter your email:' });
+            setStep('email');
+        } else {
+            addLog({ type: 'error', text: 'Name cannot be empty.' });
+        }
+        break;
+      case 'email':
+        if (validateEmail(command)) {
+            setFormData(prev => ({ ...prev, email: command }));
+            addLog({ type: 'prompt', text: 'Enter your message:' });
+            setStep('message');
+        } else {
+            addLog({ type: 'error', text: 'Invalid email format.' });
+        }
+        break;
+      case 'message':
+         if (command) {
+            setFormData(prev => ({ ...prev, message: command }));
+            addLog({ type: 'system', text: '--- New Transmission ---' });
+            addLog({ type: 'system', text: `Name: ${formData.name}` }); // MODIFIED for clarity
+            addLog({ type: 'system', text: `Email: ${formData.email}` }); // MODIFIED for clarity
+            addLog({ type: 'system', text: `Message: ${command}` });
+            addLog({ type: 'prompt', text: 'Proceed with transmission? [Y/N]' });
+            setStep('confirm');
+        } else {
+            addLog({ type: 'error', text: 'Message cannot be empty.' });
+        }
+        break;
+      case 'confirm':
         if (command.toLowerCase() === 'y' || command.toLowerCase() === 'yes') {
           addLog({ type: 'system', text: '[ ENCRYPTING & TRANSMITTING PACKET ]' });
           setStep('sending');
@@ -213,6 +321,7 @@ export default function Contact() {
     }
   }
 
+  // ... (Keep existing contacts array and getPromptLabel function) ...
   const contacts = [
     { label: "Email", value: "kumaarpannag@gmail.com", href: "mailto:kumaarpannag@gmail.com" },
     { label: "LinkedIn", value: "linkedin.com/in/pannag-kumaar", href: "https://linkedin.com/in/pannag-kumaar" },
@@ -232,6 +341,7 @@ export default function Contact() {
   }
 
   return (
+    // ... (Keep existing JSX, no changes needed to the <section> structure) ...
     <section id="contact" ref={ref} className="py-20 px-4 max-w-6xl mx-auto">
         <div className={`transition-all duration-1000 ${isVisible ? "fade-in-up" : "opacity-0"}`}>
             <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">{"> Connect with Pannag"}</h2>
@@ -245,11 +355,11 @@ export default function Contact() {
                     <div ref={logContainerRef} className="flex-grow overflow-y-auto p-4 space-y-1 terminal-text-glow">
                         {log.map((line, index) => (
                             <div key={index} className="flex">
-                                {line.type === 'input' && <div className="flex w-full"><span className="text-primary">pannag@portfolio:~$</span><span className="flex-1 ml-2">{line.text}</span></div>}
-                                {line.type === 'system' && <div className="text-muted-foreground">{line.text}</div>}
-                                {line.type === 'prompt' && <div className="text-secondary">{line.text}</div>}
-                                {line.type === 'error' && <div className="text-destructive">{line.text}</div>}
-                                {line.type === 'success' && <div className="text-primary">{line.text}</div>}
+                                {line.type === 'input' && <div className="flex w-full"><span className="text-primary">pannag@portfolio:~$</span><span className="flex-1 ml-2 break-all">{line.text}</span></div>}
+                                {line.type === 'system' && <div className="text-muted-foreground break-all">{line.text}</div>}
+                                {line.type === 'prompt' && <div className="text-secondary break-all">{line.text}</div>}
+                                {line.type === 'error' && <div className="text-destructive break-all">{line.text}</div>}
+                                {line.type === 'success' && <div className="text-primary break-all">{line.text}</div>}
                                 {line.type === 'ascii' && <pre className="text-secondary text-xs leading-tight">{line.text}</pre>}
                             </div>
                         ))}

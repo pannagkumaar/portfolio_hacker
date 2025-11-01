@@ -3,7 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
+/* MODIFICATION: 
+  Replaced :root and .dark with theme-based attributes.
+  This allows the 'theme' command to work.
+*/
+
+/* Default theme (matrix) */
+html[data-theme="matrix"] {
   --background: #000000;
   --foreground: #00ff00;
   --card: #0a0a0a;
@@ -39,40 +45,70 @@
   --sidebar-ring: #00ff00;
 }
 
-.dark {
+/* ADDITION: Amber theme */
+html[data-theme="amber"] {
   --background: #000000;
-  --foreground: #00ff00;
+  --foreground: #FFBF00;
   --card: #0a0a0a;
-  --card-foreground: #00ff00;
+  --card-foreground: #FFBF00;
   --popover: #0a0a0a;
-  --popover-foreground: #00ff00;
-  --primary: #00ff00;
+  --popover-foreground: #FFBF00;
+  --primary: #FFBF00;
   --primary-foreground: #000000;
-  --secondary: #008f11;
+  --secondary: #b38600;
   --secondary-foreground: #000000;
   --muted: #1a1a1a;
   --muted-foreground: #808080;
-  --accent: #00ff00;
+  --accent: #FFBF00;
   --accent-foreground: #000000;
-  --destructive: #ff0000;
+  --destructive: #ff4d4d;
   --destructive-foreground: #000000;
   --border: #2a2a2a;
   --input: #1a1a1a;
-  --ring: #00ff00;
-  --chart-1: #00ff00;
-  --chart-2: #00e676;
-  --chart-3: #00bcd4;
-  --chart-4: #ff6e40;
-  --chart-5: #9c27b0;
+  --ring: #FFBF00;
   --sidebar: #000000;
-  --sidebar-foreground: #00ff00;
-  --sidebar-primary: #00ff00;
+  --sidebar-foreground: #FFBF00;
+  --sidebar-primary: #FFBF00;
   --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #008f11;
+  --sidebar-accent: #b38600;
   --sidebar-accent-foreground: #000000;
   --sidebar-border: #2a2a2a;
-  --sidebar-ring: #00ff00;
+  --sidebar-ring: #FFBF00;
 }
+
+/* ADDITION: Ice theme */
+html[data-theme="ice"] {
+  --background: #000000;
+  --foreground: #00FFFF;
+  --card: #0a0a0a;
+  --card-foreground: #00FFFF;
+  --popover: #0a0a0a;
+  --popover-foreground: #00FFFF;
+  --primary: #00FFFF;
+  --primary-foreground: #000000;
+  --secondary: #00b3b3;
+  --secondary-foreground: #000000;
+  --muted: #1a1a1a;
+  --muted-foreground: #808080;
+  --accent: #00FFFF;
+  --accent-foreground: #000000;
+  --destructive: #ff4d4d;
+  --destructive-foreground: #000000;
+  --border: #2a2a2a;
+  --input: #1a1a1a;
+  --ring: #00FFFF;
+  --sidebar: #000000;
+  --sidebar-foreground: #00FFFF;
+  --sidebar-primary: #00FFFF;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #00b3b3;
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #00FFFF;
+}
+
+
+
 
 @theme inline {
   /* optional: --font-sans, --font-serif, --font-mono if they are applied in the layout.tsx */
@@ -120,6 +156,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* ADDITION: Smooth theme transitions */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -192,12 +230,32 @@
   border-right: 3px solid var(--primary);
 }
 
+/* MODIFICATION: Removed 'animation' property.
+  It will be added back on hover.
+*/
 .glitch {
+  /* animation: glitch 0.3s infinite; */
+}
+
+/* ADDITION: Glitch on hover */
+.glitch:hover {
   animation: glitch 0.3s infinite;
 }
 
-.fade-in-up {
+
+/* MODIFICATION: Renamed to 'fade-in-up-wrapper' 
+  to avoid conflict with new stagger animation.
+*/
+.fade-in-up-wrapper {
   animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* ADDITION: New classes for stagger animation */
+.stagger-in {
+  opacity: 0;
+}
+.stagger-in.visible {
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .scanlines {
@@ -248,10 +306,13 @@ body::after {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(circle, rgba(0, 255, 0, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+    /* MODIFICATION: Use var() for themeable gradient */
+    background: radial-gradient(circle, hsl(var(--primary) / 0.05) 0%, rgba(0, 0, 0, 0) 70%);
     pointer-events: none;
     z-index: -1;
     opacity: 0.5;
+    /* ADDITION: Transition for theme change */
+    transition: background 0.3s ease;
 }
 .neon-glow {
   text-shadow: 0 0 5px hsl(var(--primary) / 0.7);
@@ -292,6 +353,14 @@ body::after {
   }
 }
 
-.text-glitch {
+/* MODIFICATION: Changed to 'text-glitch:hover'
+*/
+.text-glitch:hover {
   animation: text-glitch 1s infinite linear alternate-reverse;
 }
+
+/* ADDITION: Class for terminal text glow */
+.terminal-text-glow {
+  text-shadow: 0 0 3px hsl(var(--primary) / 0.3);
+}
+

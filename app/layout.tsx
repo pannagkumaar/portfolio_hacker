@@ -20,7 +20,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    // MODIFICATION: Removed 'dark' class, added default 'data-theme'
+    <html lang="en" className="scroll-smooth" data-theme="matrix">
       <body className={`font-sans antialiased bg-background text-foreground`}>
         {children}
         <Analytics />
