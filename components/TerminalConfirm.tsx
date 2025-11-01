@@ -13,7 +13,6 @@ export default function TerminalConfirm({ href, onClose }: TerminalConfirmProps)
   const [typedCommand, setTypedCommand] = useState('')
   const [showPrompt, setShowPrompt] = useState(false)
   
-  // FIX: Destructure playSound for both hooks
   const { playSound: playTypingSound } = useSound('/sounds/click.wav', 0.2)
   const { playSound: playBeepSound } = useSound('/sounds/beep.wav', 0.3)
   
@@ -47,16 +46,26 @@ export default function TerminalConfirm({ href, onClose }: TerminalConfirmProps)
     }
   }, [command, playTypingSound, playBeepSound])
 
+  // --- HANDLER FUNCTIONS ---
+
+  const handleConfirm = () => {
+    window.open(href, '_blank', 'noopener,noreferrer')
+    onClose()
+  }
+
+  const handleCancel = () => {
+    onClose()
+  }
+
   // Effect to listen for user input (Y/N)
   useEffect(() => {
     if (!showPrompt) return
 
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === 'y') {
-        window.open(href, '_blank', 'noopener,noreferrer')
-        onClose()
+        handleConfirm()
       } else if (event.key.toLowerCase() === 'n' || event.key === 'Escape') {
-        onClose()
+        handleCancel()
       }
     }
 
@@ -64,6 +73,7 @@ export default function TerminalConfirm({ href, onClose }: TerminalConfirmProps)
     return () => {
       window.removeEventListener('keydown', handleKeyPress)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showPrompt, href, onClose])
 
   return (
@@ -76,8 +86,28 @@ export default function TerminalConfirm({ href, onClose }: TerminalConfirmProps)
         </div>
         {showPrompt && (
           <div className="mt-4 text-lg md:text-2xl text-secondary fade-in-up">
-            <span>Redirect to external domain? [Y/N]</span>
-            <span className="animate-pulse">_</span>
+            <div>
+              <span>Redirect to external domain? [Y/N]</span>
+              <span className="animate-pulse">_</span>
+            </div>
+            
+            {/* --- ADDED BUTTONS FOR MOBILE --- */}
+            <div className="flex gap-4 mt-6">
+              <button 
+                onClick={handleConfirm}
+                className="px-6 py-2 bg-primary text-primary-foreground font-mono font-bold hover:shadow-lg hover:shadow-primary/50 transition-all terminal-border flicker"
+              >
+                {"> [Y]es"}
+              </button>
+              <button 
+                onClick={handleCancel}
+                className="px-6 py-2 border-2 border-secondary text-secondary font-mono font-bold hover:shadow-lg hover:shadow-secondary/50 transition-all flicker"
+              >
+                {"> [N]o"}
+              </button>
+            </div>
+            {/* --- END OF ADDED BUTTONS --- */}
+
           </div>
         )}
       </div>
