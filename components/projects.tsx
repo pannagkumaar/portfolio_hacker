@@ -2,16 +2,19 @@
 
 import { useEffect, useRef, useState } from "react"
 import ExternalLink from './ExternalLink'
+import SectionLoader from "./SectionLoader" // 1. Import the loader
 
 export default function Projects() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false) // 2. Add loaded state
   const ref = useRef(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true)
+          setIsVisible(true) // 3. Trigger visibility
+          observer.unobserve(entry.target); // 4. Observe only once
         }
       },
       { threshold: 0.1 },
@@ -21,7 +24,12 @@ export default function Projects() {
       observer.observe(ref.current)
     }
 
-    return () => observer.disconnect()
+    return () => {
+        if (ref.current) {
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            observer.unobserve(ref.current)
+        }
+    }
   }, [])
 
   const projects = [
@@ -73,10 +81,17 @@ export default function Projects() {
 
   return (
     <section id="projects" ref={ref} className="py-20 px-4 max-w-6xl mx-auto">
-      <div className={`transition-all duration-1000 ${isVisible ? "fade-in-up" : "opacity-0"}`}>
-        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">{"> Accessing Projects..."}</h2>
+      {/* 5. The h2 animates on its own */}
+      <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">{"> Accessing Projects..."}</h2>
 
-        <div className="grid md:grid-cols-2 gap-6">
+      {/* 6. Show loader when visible but not yet loaded */}
+      {isVisible && !isLoaded && (
+        <SectionLoader onComplete={() => setIsLoaded(true)} />
+      )}
+
+      {/* 7. Show content only after loading is complete */}
+      {isLoaded && (
+        <div className="grid md:grid-cols-2 gap-6 animate-fadeInUp">
           {projects.map((project) => (
             <ExternalLink
               key={project.name}
@@ -93,7 +108,7 @@ export default function Projects() {
             </ExternalLink>
           ))}
         </div>
-      </div>
+      )}
     </section>
   )
 }

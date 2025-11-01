@@ -12,8 +12,11 @@ interface TerminalConfirmProps {
 export default function TerminalConfirm({ href, onClose }: TerminalConfirmProps) {
   const [typedCommand, setTypedCommand] = useState('')
   const [showPrompt, setShowPrompt] = useState(false)
-  const playTypingSound = useSound('/sounds/click.wav', 0.2)
-  const playBeepSound = useSound('/sounds/beep.wav', 0.3)
+  
+  // FIX: Destructure playSound for both hooks
+  const { playSound: playTypingSound } = useSound('/sounds/click.wav', 0.2)
+  const { playSound: playBeepSound } = useSound('/sounds/beep.wav', 0.3)
+  
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
 

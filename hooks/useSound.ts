@@ -1,22 +1,57 @@
 // hooks/useSound.ts
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 
-export const useSound = (soundPath: string, volume: number = 0.5) => {
-  const playSound = useCallback(() => {
-    // Sounds can only be played after a user interaction. We'll wrap this in a try-catch.
-    try {
+// 1. Create a ref to hold the audio object
+const audioCache = new Map<string, HTMLAudioElement>();
+
+export const useSound = (soundPath: string, volume: number = 0.5, loop: boolean = false) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // 2. Pre-load the audio element
+  useEffect(() => {
+    if (audioCache.has(soundPath)) {
+      audioRef.current = audioCache.get(soundPath)!;
+    } else {
       const audio = new Audio(soundPath);
       audio.volume = volume;
-      audio.play().catch(error => {
-        // This catch handles cases where the browser blocks autoplay
-        console.warn("Sound autoplay was prevented.", error);
-      });
+      audio.loop = loop;
+      audioCache.set(soundPath, audio);
+      audioRef.current = audio;
+    }
+
+    // 3. Update settings if they change
+    if (audioRef.current) {
+        audioRef.current.volume = volume;
+        audioRef.current.loop = loop;
+    }
+  }, [soundPath, volume, loop]);
+
+  const playSound = useCallback(() => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0; // Rewind to start
+        audioRef.current.play().catch(error => {
+          console.warn("Sound autoplay was prevented.", error);
+        });
+      }
     } catch (error) {
       console.error("Could not play sound:", error);
     }
-  }, [soundPath, volume]);
+  }, []);
 
-  return playSound;
+  // 4. Add a stop function
+  const stopSound = useCallback(() => {
+    try {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+    } catch (error) {
+        console.error("Could not stop sound:", error)
+    }
+  }, []);
+
+  return { playSound, stopSound };
 };

@@ -1,12 +1,19 @@
 // components/BootSequence.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSound } from '@/hooks/useSound' // 1. Import useSound
 
 export default function BootSequence({ onComplete }: { onComplete: () => void }) {
   const [lines, setLines] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
+
+  // 2. Use the hook to get the playSound function
+  const { playSound: playTypeSound } = useSound('/sounds/click.wav', 0.2);
+
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isCompleteRef = useRef(false);
 
   useEffect(() => {
     // Generate dynamic date and time for the BIOS line
@@ -36,29 +43,46 @@ export default function BootSequence({ onComplete }: { onComplete: () => void })
     ];
 
     let currentLineIndex = 0;
-    const typeSound = new Audio('/sounds/click.wav');
-    typeSound.volume = 0.2;
+    // 3. Removed the old new Audio() line
 
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
+      if (isCompleteRef.current) return; // Stop if skipped
+
       if (currentLineIndex < bootLines.length) {
-        // Play sound for non-empty lines
+        // 4. Use the playTypeSound function from the hook
         if (bootLines[currentLineIndex]) {
-           typeSound.currentTime = 0; // Rewind to start for rapid playback
-           typeSound.play().catch(e => {}); // Play and ignore autoplay errors
+           playTypeSound();
         }
         setLines((prevLines) => [...prevLines, bootLines[currentLineIndex]]);
         setProgress(((currentLineIndex + 1) / bootLines.length) * 100);
         currentLineIndex++;
       } else {
-        clearInterval(interval);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        isCompleteRef.current = true;
         setShowCursor(false);
-        // Signal to the parent component that the animation is complete
         setTimeout(onComplete, 750);
       }
     }, 120); // Adjust speed here (in milliseconds)
 
-    return () => clearInterval(interval);
-  }, [onComplete]);
+    // Add skip key listener
+    const handleSkip = (event: KeyboardEvent) => {
+      if ((event.key === 'Enter' || event.key === 'Escape') && !isCompleteRef.current) {
+        isCompleteRef.current = true;
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setLines(bootLines); // Show all lines immediately
+        setProgress(100);
+        setShowCursor(false);
+        onComplete();
+      }
+    };
+    
+    window.addEventListener('keydown', handleSkip);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      window.removeEventListener('keydown', handleSkip);
+    };
+  }, [onComplete, playTypeSound]); // 5. Add playTypeSound to dependency array
 
   return (
     <div className="font-mono text-primary text-sm md:text-base w-full max-w-3xl text-left mx-auto">

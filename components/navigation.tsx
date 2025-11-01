@@ -9,7 +9,9 @@ import TerminalNav from "./TerminalNav"
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [terminalTarget, setTerminalTarget] = useState<string | null>(null)
-  const playClickSound = useSound('/sounds/click.wav', 0.4)
+  
+  // FIX: Destructure playSound
+  const { playSound: playClickSound } = useSound('/sounds/click.wav', 0.4)
 
   const links = [
     { href: "#about", label: "About", sectionId: "about" },

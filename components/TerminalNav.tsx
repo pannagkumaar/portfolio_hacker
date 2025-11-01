@@ -12,7 +12,10 @@ interface TerminalNavProps {
 export default function TerminalNav({ targetSection, onComplete }: TerminalNavProps) {
   const command = `goto ${targetSection}`
   const [typedCommand, setTypedCommand] = useState('')
-  const playTypingSound = useSound('/sounds/click.wav', 0.2)
+  
+  // FIX: Destructure playSound
+  const { playSound: playTypingSound } = useSound('/sounds/click.wav', 0.2)
+  
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {

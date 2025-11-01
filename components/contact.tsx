@@ -36,6 +36,42 @@ const neofetchArt = `
            -oydddyo-
 `;
 
+// 1. Define command list for tab-completion
+const availableCommands = [
+    'help', 
+    'sendmsg', 
+    'whoami', 
+    'ls', 
+    'cat', 
+    'neofetch', 
+    'echo', 
+    'history', 
+    'scan', 
+    'theme', 
+    'clear',
+    'decrypt', // 2. Add new commands
+    'connect'
+];
+
+// 3. ASCII art for decrypt
+const decryptedFileArt = `
++------------------------------------------+
+|  ACCESS GRANTED: FILE DECRYPTED          |
++------------------------------------------+
+|                                          |
+|  Thanks for checking out my portfolio!   |
+|                                          |
+|  I'm passionate about building secure     |
+|  and innovative systems. If you're       |
+|  interested in collaborating, feel       |
+|  free to reach out via 'sendmsg'.        |
+|                                          |
+|  - Pannag Kumaar                         |
+|                                          |
++------------------------------------------+
+`;
+
+
 export default function Contact() {
   const [isVisible, setIsVisible] = useState(false);
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -45,14 +81,15 @@ export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [transmissionProgress, setTransmissionProgress] = useState(0);
   const [transmissionData, setTransmissionData] = useState('');
-  // ADDITION: State for command history
+  
+  // 4. State for command history
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
   
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
 
-  // ... (Keep existing useEffect hooks: Scroll to bottom, Intersection Observer, Focus input, Transmission Animation) ...
   // Scroll to bottom of log on new entries
   useEffect(() => {
     if (logContainerRef.current) {
@@ -68,6 +105,7 @@ export default function Contact() {
         if (entry.isIntersecting && step === 'start') {
           setIsVisible(true);
           setLog([{ type: 'system', text: 'Contact protocol loaded.' }, { type: 'system', text: 'Type "help" for a list of commands.' }]);
+          observer.unobserve(entry.target); // Observe only once
         }
       },
       { threshold: 0.1 },
@@ -75,22 +113,27 @@ export default function Contact() {
 
     if (ref.current) observer.observe(ref.current);
     return () => {
-      if (ref.current) observer.unobserve(ref.current);
+      if (ref.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        observer.unobserve(ref.current);
+      }
     }
   }, [step]);
 
   // Focus input when the section becomes visible
   useEffect(() => {
-    if (isIntersecting && step !== 'sending') {
+    // 5. Don't focus while 'decrypting'
+    if (isIntersecting && (step !== 'sending' && step !== 'decrypting')) { 
       inputRef.current?.focus();
     }
   }, [isIntersecting, step]);
 
-  // Transmission Animation Effect
+  // Transmission/Decryption Animation Effect
   useEffect(() => {
-    if (step !== 'sending') return;
+    // 6. Run for both 'sending' and 'decrypting'
+    if (step !== 'sending' && step !== 'decrypting') return;
 
-    const duration = 3000; // 3 seconds
+    const duration = step === 'sending' ? 3000 : 2000; // Decryption is faster
     const intervalTime = 50;
     let elapsedTime = 0;
 
@@ -103,10 +146,16 @@ export default function Contact() {
       if (elapsedTime >= duration) {
         clearInterval(interval);
         setTimeout(() => {
-            addLog({ type: 'success', text: 'Packet sent successfully ✓' });
-            addLog({ type: 'system', text: 'Connection terminated. Type "help" for a list of commands.' });
+            if (step === 'sending') {
+                addLog({ type: 'success', text: 'Packet sent successfully ✓' });
+                addLog({ type: 'system', text: 'Connection terminated. Type "help" for a list of commands.' });
+                setFormData({ name: '', email: '', message: '' });
+            } else if (step === 'decrypting') {
+                // 7. Show decrypted content
+                addLog({ type: 'success', text: 'Decryption complete.' });
+                addLog({ type: 'ascii', text: decryptedFileArt });
+            }
             setStep('start');
-            setFormData({ name: '', email: '', message: '' });
             setTransmissionProgress(0);
         }, 500);
       }
@@ -150,6 +199,32 @@ export default function Contact() {
     }, 350); // 350ms delay per line
   };
 
+  // 8. Add 'connect' simulation
+  const runFakeConnect = (ip: string) => {
+    const connectLines = [
+        `Connecting to ${ip}:443...`,
+        `[+] Pinging ${ip} with 32 bytes of data:`,
+        `   Reply from ${ip}: bytes=32 time=12ms TTL=58`,
+        `   Reply from ${ip}: bytes=32 time=11ms TTL=58`,
+        `[+] Connection established.`,
+        `[+] Running traceroute...`,
+        `   1  1ms  192.168.1.1`,
+        `   2  8ms  10.0.0.1`,
+        `   3  11ms  203.0.113.1`,
+        `   4  12ms  ${ip}`,
+        `[+] Trace complete. Connection secure.`,
+    ];
+    let index = 0;
+    const interval = setInterval(() => {
+        if (index < connectLines.length) {
+            addLog({ type: 'system', text: connectLines[index] });
+            index++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 350);
+  }
+
   // ADDITION: Helper function for 'theme' command
   const setTheme = (themeName: string) => {
     document.documentElement.setAttribute('data-theme', themeName);
@@ -159,19 +234,19 @@ export default function Contact() {
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
     const command = inputValue.trim();
-    // MODIFICATION: Add command to history and parse args
     if (command) {
-        setCommandHistory(prev => [...prev, command]);
+        setCommandHistory(prev => [command, ...prev]); // 9. Add to history (newest first)
     }
+    setHistoryIndex(-1); // 10. Reset history index
+
     const [baseCommand, ...args] = command.split(' ');
     const arg = args.join(' '); // Re-join all args
 
-    if (step !== 'sending') addLog({ type: 'input', text: command });
+    if (step !== 'sending' && step !== 'decrypting') addLog({ type: 'input', text: command });
     setInputValue('');
 
     switch (step) {
       case 'start':
-        // MODIFICATION: Added new commands
         switch (baseCommand.toLowerCase()) {
           case 'help':
             addLog({ type: 'system', text: 'Available commands:' });
@@ -179,6 +254,8 @@ export default function Contact() {
             addLog({ type: 'system', text: '  whoami           - Display user information.' });
             addLog({ type: 'system', text: '  ls               - List available files.' });
             addLog({ type: 'system', text: '  cat <file>       - Display file content (e.g., cat projects.txt).' });
+            addLog({ type: 'system', text: '  decrypt <file>   - Decrypt an encoded file.' }); // 11. Add to help
+            addLog({ type: 'system', text: '  connect <ip>     - Simulate a connection to an IP/domain.' }); // 11. Add to help
             addLog({ type: 'system', text: '  neofetch         - Display system information.' });
             addLog({ type: 'system', text: '  echo <text>      - Print text to terminal.' });
             addLog({ type: 'system', text: '  history          - View command history.' });
@@ -191,7 +268,6 @@ export default function Contact() {
             setStep('name');
             break;
           
-          // ... (keep whoami, ls, cat, neofetch) ...
           case 'whoami':
             addLog({ type: 'success', text: 'user: guest' });
             addLog({ type: 'success', text: 'privileges: limited' });
@@ -200,6 +276,7 @@ export default function Contact() {
             addLog({ type: 'system', text: '  projects.txt' });
             addLog({ type: 'system', text: '  skills.txt' });
             addLog({ type: 'system', text: '  contact.sh' });
+            addLog({ type: 'system', text: '  secrets.txt.enc' }); // 12. Add new file to ls
             break;
           case 'cat':
              if (arg === 'projects.txt') {
@@ -212,6 +289,9 @@ export default function Contact() {
                  addLog({ type: 'system', text: 'Web Security: OWASP Top 10, XSS, SQL Injection' });
              } else if (arg === 'contact.sh') {
                 addLog({ type: 'error', text: 'Permission denied. Use `sendmsg` command.' });
+             } else if (arg === 'secrets.txt.enc') { // 13. Handle new file
+                addLog({ type: 'error', text: 'ACCESS DENIED: FILE ENCRYPTED.' });
+                addLog({ type: 'system', text: 'Hint: Try the `decrypt` command.' });
              } else {
                  addLog({ type: 'error', text: `cat: ${arg || ''}: No such file or directory` });
              }
@@ -238,8 +318,9 @@ export default function Contact() {
               addLog({ type: 'system', text: 'No history.' });
               break;
             }
-            commandHistory.forEach((cmd, index) => {
-                addLog({ type: 'system', text: `  ${index + 1}: ${cmd}` });
+            // 14. Show history in reverse (newest first)
+            [...commandHistory].reverse().forEach((cmd, index) => {
+                addLog({ type: 'system', text: `  ${commandHistory.length - index}: ${cmd}` });
             });
             break;
           case 'scan':
@@ -258,6 +339,23 @@ export default function Contact() {
             }
             break;
           
+          // 15. Add new command cases
+          case 'decrypt':
+            if (arg === 'secrets.txt.enc') {
+                addLog({ type: 'system', text: '[ INITIATING DECRYPTION PROTOCOL ]' });
+                setStep('decrypting');
+            } else {
+                addLog({ type: 'error', text: `decrypt: ${arg || ''}: No such file or file is not encrypted` });
+            }
+            break;
+          case 'connect':
+            if (arg) {
+                runFakeConnect(arg);
+            } else {
+                addLog({ type: 'error', text: 'usage: connect <ip/domain>' });
+            }
+            break;
+          
           // END ADDITION
 
           case 'clear':
@@ -270,7 +368,7 @@ export default function Contact() {
         }
         break;
 
-      // ... (Keep existing cases for 'name', 'email', 'message', 'confirm', 'sending') ...
+      // ... (Keep existing cases for 'name', 'email', 'message', 'confirm') ...
       case 'name':
         if (command) {
             setFormData(prev => ({ ...prev, name: command }));
@@ -293,8 +391,8 @@ export default function Contact() {
          if (command) {
             setFormData(prev => ({ ...prev, message: command }));
             addLog({ type: 'system', text: '--- New Transmission ---' });
-            addLog({ type: 'system', text: `Name: ${formData.name}` }); // MODIFIED for clarity
-            addLog({ type: 'system', text: `Email: ${formData.email}` }); // MODIFIED for clarity
+            addLog({ type: 'system', text: `Name: ${formData.name}` });
+            addLog({ type: 'system', text: `Email: ${formData.email}` });
             addLog({ type: 'system', text: `Message: ${command}` });
             addLog({ type: 'prompt', text: 'Proceed with transmission? [Y/N]' });
             setStep('confirm');
@@ -317,11 +415,51 @@ export default function Contact() {
         break;
       
       case 'sending': // Input is disabled during sending
+      case 'decrypting': // 16. Disable input while decrypting
         break;
     }
   }
 
-  // ... (Keep existing contacts array and getPromptLabel function) ...
+  // 17. Add KeyDown handler for History and Tab-complete
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Check if in a state that should process keydowns
+    if (step !== 'start') {
+        // Allow default behavior for name, email, message, confirm steps
+        return;
+    }
+
+    if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (commandHistory.length > 0) {
+            const newIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+            setHistoryIndex(newIndex);
+            setInputValue(commandHistory[newIndex]);
+        }
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex > 0) {
+            const newIndex = Math.max(historyIndex - 1, 0);
+            setHistoryIndex(newIndex);
+            setInputValue(commandHistory[newIndex]);
+        } else if (historyIndex === 0) { // At the "oldest" command
+            setHistoryIndex(-1);
+            setInputValue('');
+        }
+    } else if (e.key === 'Tab') {
+        e.preventDefault();
+        const partialCommand = inputValue.split(' ')[0];
+        const matches = availableCommands.filter(cmd => cmd.startsWith(partialCommand));
+        
+        if (matches.length === 1) {
+            setInputValue(matches[0] + ' ');
+        } else if (matches.length > 1) {
+            // Add a new log entry to show the matches
+            addLog({ type: 'system', text: matches.join('   ') });
+        }
+    }
+  }
+
+  // ... (Keep existing contacts array) ...
   const contacts = [
     { label: "Email", value: "kumaarpannag@gmail.com", href: "mailto:kumaarpannag@gmail.com" },
     { label: "LinkedIn", value: "linkedin.com/in/pannag-kumaar", href: "https://linkedin.com/in/pannag-kumaar" },
@@ -360,21 +498,39 @@ export default function Contact() {
                                 {line.type === 'prompt' && <div className="text-secondary break-all">{line.text}</div>}
                                 {line.type === 'error' && <div className="text-destructive break-all">{line.text}</div>}
                                 {line.type === 'success' && <div className="text-primary break-all">{line.text}</div>}
-                                {line.type === 'ascii' && <pre className="text-secondary text-xs leading-tight">{line.text}</pre>}
+                                {line.type === 'ascii' && <pre className="text-secondary text-xs leading-tight whitespace-pre-wrap">{line.text}</pre>}
                             </div>
                         ))}
-                        {step === 'sending' && (
+                        {/* 18. Modify 'sending' block to handle 'decrypting' */}
+                        {(step === 'sending' || step === 'decrypting') && (
                             <div className="mt-2">
                                 <div className="text-left h-24 overflow-hidden relative"><div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div><p className="text-xs break-all opacity-30 animate-pulse">{transmissionData}</p></div>
-                                <div className="w-full mx-auto mt-2"><div className="text-primary font-mono text-xs mb-1">{`> Transmission progress... [${Math.floor(transmissionProgress)}%]`}</div><div className="w-full h-3 border border-primary p-0.5"><div className="h-full bg-primary" style={{ width: `${transmissionProgress}%` }}></div></div></div>
+                                <div className="w-full mx-auto mt-2">
+                                    <div className="text-primary font-mono text-xs mb-1">
+                                        {step === 'sending' 
+                                            ? `> Transmission progress... [${Math.floor(transmissionProgress)}%]`
+                                            : `> Decrypting... [${Math.floor(transmissionProgress)}%]`
+                                        }
+                                    </div>
+                                <div className="w-full h-3 border border-primary p-0.5"><div className="h-full bg-primary" style={{ width: `${transmissionProgress}%` }}></div></div></div>
                             </div>
                         )}
                     </div>
                     
-                    {step !== 'sending' && (
+                    {/* 19. Disable input for both 'sending' and 'decrypting' */}
+                    {(step !== 'sending' && step !== 'decrypting') && (
                         <form onSubmit={handleCommand} className="flex items-center p-4 border-t border-primary/30">
                             <label className="text-primary mr-2">{step === 'start' ? 'pannag@portfolio:~$' : `${getPromptLabel()}`}</label>
-                            <input ref={inputRef} type={step === 'email' ? 'email' : 'text'} value={inputValue} onChange={(e) => setInputValue(e.target.value)} className="flex-grow bg-transparent text-foreground focus:outline-none" />
+                            {/* 20. Add onKeyDown handler to input */}
+                            <input 
+                                ref={inputRef} 
+                                type={step === 'email' ? 'email' : 'text'} 
+                                value={inputValue} 
+                                onChange={(e) => setInputValue(e.target.value)} 
+                                onKeyDown={handleKeyDown} // 20. ADDED
+                                className="flex-grow bg-transparent text-foreground focus:outline-none" 
+                                autoComplete="off" // 21. Disable browser autocomplete
+                            />
                             <span className="terminal-cursor"></span>
                         </form>
                     )}

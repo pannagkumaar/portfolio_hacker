@@ -14,7 +14,9 @@ export default function Hero() {
   const [showBootSequence, setShowBootSequence] = useState(true)
   const [showMainContent, setShowMainContent] = useState(false)
   const [terminalTarget, setTerminalTarget] = useState<string | null>(null); 
-  const playClickSound = useSound('/sounds/click.wav', 0.4);
+  
+  // FIX: Destructure playSound
+  const { playSound: playClickSound } = useSound('/sounds/click.wav', 0.4);
 
   const roles = ["Ethical Hacker", "Cybersecurity Engineer", "Tool Builder", "Privacy Advocate", "Learner"]
 

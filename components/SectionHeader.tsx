@@ -9,21 +9,29 @@ export default function SectionHeader({ title }: { title: string }) {
   const [text, setText] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLHeadingElement>(null);
-  const playGlitchSound = useSound('/sounds/glitch.wav', 0.1);
+  
+  // FIX: Destructure playSound from the useSound hook
+  const { playSound: playGlitchSound } = useSound('/sounds/glitch.wav', 0.1);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
+          observer.unobserve(entry.target); // Observe only once
         }
       },
-      { threshold: 0.1, triggerOnce: true }
+      { threshold: 0.1 }
     );
     if (ref.current) {
       observer.observe(ref.current);
     }
-    return () => observer.disconnect();
+    return () => {
+        if (ref.current) {
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            observer.unobserve(ref.current);
+        }
+    }
   }, []);
 
   useEffect(() => {

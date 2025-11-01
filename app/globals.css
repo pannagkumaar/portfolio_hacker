@@ -343,20 +343,21 @@ body::after {
 
 @keyframes text-glitch {
   2%, 64% {
-    transform: translate(1px, 0) skew(0deg);
+    /* Make the glitch more subtle */
+    transform: translate(0.5px, 0) skew(0deg);
   }
   4%, 60% {
-    transform: translate(-1px, 0) skew(0deg);
+    transform: translate(-0.5px, 0) skew(0deg);
   }
   62% {
-    transform: translate(0, 0) skew(2deg);
+    transform: translate(0, 0) skew(0.5deg);
   }
 }
 
 /* MODIFICATION: Changed to 'text-glitch:hover'
 */
-.text-glitch:hover {
-  animation: text-glitch 1s infinite linear alternate-reverse;
+.text-glitch {
+  animation: text-glitch 1.5s infinite linear alternate-reverse;
 }
 
 /* ADDITION: Class for terminal text glow */

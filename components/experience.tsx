@@ -1,16 +1,19 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import SectionLoader from "./SectionLoader" // 1. Import the loader
 
 export default function Experience() {
   const [isVisible, setIsVisible] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false) // 2. Add loaded state
   const ref = useRef(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true)
+          setIsVisible(true) // 3. Trigger visibility first
+          observer.unobserve(entry.target); // 4. Observe only once
         }
       },
       { threshold: 0.1 },
@@ -20,15 +23,27 @@ export default function Experience() {
       observer.observe(ref.current)
     }
 
-    return () => observer.disconnect()
+    return () => {
+        if (ref.current) {
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+            observer.unobserve(ref.current)
+        }
+    }
   }, [])
 
   return (
     <section id="experience" ref={ref} className="py-20 px-4 max-w-6xl mx-auto">
-      <div className={`transition-all duration-1000 ${isVisible ? "fade-in-up" : "opacity-0"}`}>
-        <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">{"> Accessing Work Log..."}</h2>
+      {/* 5. The h2 animates on its own */}
+      <h2 className="text-3xl md:text-4xl font-bold font-mono mb-8 neon-glow text-glitch">{"> Accessing Work Log..."}</h2>
 
-        <div className="space-y-8">
+      {/* 6. Show loader when visible but not yet loaded */}
+      {isVisible && !isLoaded && (
+        <SectionLoader onComplete={() => setIsLoaded(true)} />
+      )}
+
+      {/* 7. Show content only after loading is complete */}
+      {isLoaded && (
+        <div className="space-y-8 animate-fadeInUp">
           <div className="terminal-border p-8 bg-card/50">
             <div className="font-mono mb-4">
               <div className="text-primary font-bold">[2025 – Present]</div>
@@ -73,7 +88,7 @@ export default function Experience() {
             </ul>
           </div>
         </div>
-      </div>
+      )}
     </section>
   )
 }
